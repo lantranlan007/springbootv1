@@ -9,4 +9,5 @@ spring:
           redirectUri: "http://localhost:8080/login/oauth2/code/github"
           scope:
            - user:email
-           - read:user      
+           - read:user
+              

@@ -1,0 +1,96 @@
+//http://localhost:8080/message
+//http://localhost:8080/secure-message
+
+ng new --no-standalone hello-world
+
+
+package com.datvu.all.config.security;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.SecurityFilterChain;
+
+@Configuration
+@EnableWebSecurity
+public class WebSecurityConfiguration {
+
+    @Bean
+    SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        return http.csrf().disable()
+                .authorizeHttpRequests()
+                .requestMatchers("/message").permitAll()
+                .and()
+                .authorizeHttpRequests()
+                .requestMatchers("/secure-message").authenticated() 
+                .and()
+                .formLogin() // trả về page login nếu chưa authenticate
+                .and().build();
+     }
+    
+    @Bean
+    // authentication
+    public UserDetailsService userDetailsService(PasswordEncoder encoder) {
+        UserDetails admin = User.withUsername("admin_user")
+                .password(encoder.encode("123456"))
+                .roles("ADMIN")
+                .build();
+        UserDetails user = User.withUsername("user")
+                .password(encoder.encode("123456"))
+                .roles("USER")
+                .build();
+        return new InMemoryUserDetailsManager(admin, user);
+    }
+     @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+}
+
+    @Bean
+    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        return http
+                .authorizeHttpRequests(auth -> {
+                    auth.requestMatchers("/").permitAll();
+                    auth.requestMatchers("/favicon.ico").permitAll();
+                    auth.anyRequest().authenticated();
+                })
+                .oauth2Login(withDefaults())
+                .formLogin(withDefaults())
+                .build();
+    }
+    
+    
+ @Bean
+public ClientRegistration<OidcClientConfiguration> oktaClientRegistration() {
+    return ClientRegistration.withOidcLogin()
+        .clientId("your-okta-client-id")
+        .clientSecret("your-okta-client-secret")
+        .authorizationUri("https://{hostname}.okta.com/oauth2/default/v1/authorization")
+        .tokenUri("https://{hostname}.okta.com/oauth2/default/v1/token")
+        .userInfoUri("https://{hostname}.okta.com/oauth2/default/v1/userinfo")
+        .issuerUri("https://{hostname}.okta.com/oauth2/default")
+        // ... other configuration
+        .build();
+}
+
+	@Bean
+	SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+		return http.csrf().disable()
+				// .authorizeHttpRequests()// not work
+				.authorizeRequests().requestMatchers("/message", "/hello").permitAll().and()
+				// .authorizeHttpRequests()
+				.authorizeRequests().requestMatchers("/secure-message1").authenticated().and().formLogin().disable()
+				// .formLogin() // trả về page login nếu chưa authenticate
+				// .and()
+				.oauth2Login().and().build();
+	}
+
