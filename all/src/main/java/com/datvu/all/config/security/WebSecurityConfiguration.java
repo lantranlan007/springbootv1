@@ -29,7 +29,7 @@ public class WebSecurityConfiguration {
 	        .csrf().disable()
 	        .authorizeRequests(authorize -> authorize
 	            .requestMatchers("/message", "/hello").permitAll()
-	            .requestMatchers("/secure-message").authenticated()
+	            .requestMatchers("/secure-message","/protected-resource").authenticated()
 	        )
 	        .oauth2Login() // remember sign out of github.com when testing this function
 	        .and()
